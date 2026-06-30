@@ -3,15 +3,15 @@ import asyncio
 from aiogram import Bot, Dispatcher, F    
 from aiogram.types import Message       
 from aiogram.filters import Command, CommandStart
-from handlers.subscription import subscription_router               
+from handlers.user import user_router               
 
 dp = Dispatcher()  
-token = "8942961464:AAGqr4aO2uHw8y9Bg0Kf7fE6L1dqpRynOkc"
+token = "8749159299:AAEmBLPn-UyiUPUGJwJ79S4ZTvgYj1C5P44"
 if not token:                       
     error = "No token provided"     
     raise ValueError(error)        
 bot = Bot(token=token)              
-dp.include_router(subscription_router)
+dp.include_router(user_router)
 
 async def main():
     print("Starting bot...")
