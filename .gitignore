@@ -1,2 +1,3 @@
 handlers/__pycache__/
 deadlines.db
+config.env
