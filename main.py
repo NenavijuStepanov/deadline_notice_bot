@@ -51,7 +51,7 @@ async def deadline_scheduler(bot: Bot):
         await asyncio.sleep(60)
 
 dp = Dispatcher()  
-token = "8749159299:AAEmBLPn-UyiUPUGJwJ79S4ZTvgYj1C5P44"
+token = ""
 if not token:                       
     error = "No token provided"     
     raise ValueError(error)  
