@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 
+load_dotenv()
 DB_NAME = os.getenv("DB_NAME")
 
 async def init_db():
