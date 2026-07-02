@@ -3,7 +3,9 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message       
 from aiogram.filters import Command, CommandStart
 from user import user_router 
-from database import mark_as_sent, init_db, get_reminders_week, get_reminders_3days, get_reminders_day, get_reminders_hour, get_final_deadlines           
+from database import mark_as_sent, init_db, get_reminders_week, get_reminders_3days, get_reminders_day, get_reminders_hour, get_final_deadlines
+import os
+from dotenv import load_dotenv       
 
 async def deadline_scheduler(bot: Bot):
     """Каждую минуту проверяет базу данных на наличие наступивших дедлайнов"""
@@ -50,8 +52,11 @@ async def deadline_scheduler(bot: Bot):
         # Спим 60 секунд перед следующей проверкой базы
         await asyncio.sleep(60)
 
+
 dp = Dispatcher()  
-token = ""
+
+load_dotenv()
+token = os.getenv("BOT_TOKEN")
 if not token:                       
     error = "No token provided"     
     raise ValueError(error)  
@@ -59,13 +64,17 @@ if not token:
 bot = Bot(token=token)
 dp.include_router(user_router)
 
-
+background_tasks = set()  # создание глобального множество для защиты задания
 
 async def main():
     print("Starting bot...")
     try:
         await init_db()
-        asyncio.create_task(deadline_scheduler(bot))
+
+        scheduler_task = asyncio.create_task(deadline_scheduler(bot))   # запись задания в переменную
+        background_tasks.add(scheduler_task)                            # добавление задания в глобальное множество для защиты от мусорщика питона
+        scheduler_task.add_done_callback(background_tasks.discard)      # при ошибке или завершении работы бота, чтоб было удаление из глобального множества
+
         await dp.start_polling(bot)
 
     finally:

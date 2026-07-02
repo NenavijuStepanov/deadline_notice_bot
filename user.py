@@ -33,9 +33,9 @@ async def cmd_start(message: Message, bot: Bot):
     if await is_admin(bot, user_id, chat_id):
         text = (
             "Привет! Я бот для создания дедлайнов! Ниже приведен список команд\n\n"
-            "<code>/add Название / ЧЧ:ММ / ГГГГ:ММ:ДД / Описание</code> - добавление дедлайнов\n"
+            "<code>/add Название / ЧЧ:ММ / ГГГГ-ММ-ДД / Описание</code> - добавление дедлайнов\n"
             "<code>/list</code> - список активных дедлайнов(+ кнопки удаления)\n"
-            "<code>/arcive</code> - список истекших дедлайнов\n"
+            "<code>/archive</code> - список истекших дедлайнов\n"
         )
         await message.answer(text, parse_mode="HTML")
     else:
@@ -73,7 +73,7 @@ async def cmd_add(message: Message, bot: Bot, command: CommandObject):
         if success:
             await message.answer(f"✅ Напоминание '{title}' успешно добавлено на {date_str} в {time_str}!")
         else:
-            await message.answer("❌ Ошибка! Проверь формат даты (ДД.ММ.ГГГГ) и времени (ЧЧ:ММ).")
+            await message.answer("❌ Ошибка! Проверь формат даты (ГГГГ-ММ-ДД) и времени (ЧЧ:ММ).")
     except Exception as error:
         print(f"Критическая ошибка при добавлении дедлайна: {error}")
         await message.answer("⚠️ Произошла внутренняя ошибка сервера. Попробуйте позже или обратитесь к разработчику.")
@@ -152,7 +152,7 @@ async def cmd_archive(message: Message):
             await message.answer("👻 Архив пустой!")
             return
 
-        response = "📌 **Список стекших дедлайнов:**\n\n"
+        response = "📌 **Список истекших дедлайнов:**\n\n"
         
         for title, deadline_dt, description in deadlines:
 
@@ -163,3 +163,4 @@ async def cmd_archive(message: Message):
     except Exception as error:
         print(f"Ошибка при выводе архива: {error}")
         await message.answer("⚠️ Не удалось загрузить архив.")
+

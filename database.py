@@ -1,7 +1,9 @@
 import aiosqlite # Библиотека sqlite3 синхронная. Лучше использовать асинхронную aiosqlite
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
-DB_NAME = "deadlines.db"
+DB_NAME = os.getenv("DB_NAME")
 
 async def init_db():
     """Создает таблицу дедлайнов, если её еще нет"""
@@ -115,7 +117,7 @@ async def mark_as_sent(task_id: int, column: str):
 async def get_deadlines(chat_id: int):
     """Возвращает список активных дедлайнов для конкретного чата по убыванию времени"""
     async with aiosqlite.connect(DB_NAME) as db:
-        # Выбираем только не отправленные (sent_final = 0) и сортируем по убыванию (DESC)
+        # Выбираем только не отправленные (sent_final = 0) и сортируем по возрастанию
         async with db.execute(
             "SELECT id, title, deadline_dt, description FROM deadlines WHERE chat_id = ? AND sent_final = 0 ORDER BY deadline_dt",
             (chat_id,)
