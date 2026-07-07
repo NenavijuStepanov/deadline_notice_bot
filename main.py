@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv       
 
 async def deadline_scheduler(bot: Bot):
-    """Каждую минуту проверяет базу данных на наличие наступивших дедлайнов"""
+    
     while True:
         try:
            # 1. ПРОВЕРКА: Осталась неделя
@@ -49,7 +49,7 @@ async def deadline_scheduler(bot: Bot):
         except Exception as e:
             print(f"Ошибка в планировщике: {e}")
             
-        # Спим 60 секунд перед следующей проверкой базы
+        # cпим 60 секунд перед следующей проверкой базы
         await asyncio.sleep(60)
 
 

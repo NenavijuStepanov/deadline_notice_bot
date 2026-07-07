@@ -14,7 +14,7 @@ async def is_admin(bot: Bot, user_id: int, channel_id: int | str) -> bool:  # ->
     try:
         member = await bot.get_chat_member(chat_id=channel_id, user_id=user_id)   # нет понятия channel, есть только chat!!!
         
-        # Разрешенные статусы, при которых пользователь считается участником
+        # разрешенные статусы, при которых пользователь считается участником
         # "member" — обычный участник, "administrator" — админ, "creator" — владелец
         if member.status in ["administrator", "creator"]:
             return True
@@ -22,7 +22,7 @@ async def is_admin(bot: Bot, user_id: int, channel_id: int | str) -> bool:  # ->
         return False
         
     except TelegramBadRequest:
-        # Срабатывает, если бота нет в канале, канал удален или ID указан неверно
+        # срабатывает, если бота нет в канале, канал удален или ID указан неверно
         print(f"Ошибка: Бот не имеет доступа к каналу/чату {channel_id}!")
         return False
 
@@ -46,7 +46,7 @@ async def cmd_add(message: Message, bot: Bot, command: CommandObject):
     user_id = message.from_user.id
     chat_id = message.chat.id
     thread_id = message.message_thread_id
-    # Проверяем админа
+    # проверяем админа
     if not await is_admin(bot, user_id, chat_id):
         await message.answer("Командой может воспользоваться только модератор")
         return
@@ -56,17 +56,17 @@ async def cmd_add(message: Message, bot: Bot, command: CommandObject):
         await message.answer("❌ Формат: /add Название / Время / Дата / Описание")
         return
 
-    # Разбиваем по слэшу и сразу очищаем элементы от случайных пробелов по краям
+    # разбиваем по слэшу и сразу очищаем элементы от случайных пробелов по краям
     user_text = [item.strip() for item in command.args.split("/")]
 
-    # Проверяем, что пользователь передал ровно 4 блока данных через слэш
+    # проверяем, что пользователь передал ровно 4 блока данных через слэш
     if len(user_text) < 4:
         await message.answer("❌ Не хватает данных! Проверь наличие всех 3 слэшей `/`")
         return
 
     title, time_str, date_str, description = user_text[0], user_text[1], user_text[2], user_text[3]
 
-    # Пытаемся сохранить в базу данных
+    # пытаемся сохранить в базу данных
     try:
         success = await add_deadline(chat_id, user_id, thread_id, title, time_str, date_str, description)
     

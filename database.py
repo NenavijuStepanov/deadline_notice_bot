@@ -1,4 +1,4 @@
-import aiosqlite # Библиотека sqlite3 синхронная. Лучше использовать асинхронную aiosqlite
+import aiosqlite # библиотека sqlite3 синхронная. Лучше использовать асинхронную aiosqlite
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
@@ -15,14 +15,14 @@ async def init_db():
                 chat_id INTEGER,
                 user_id INTEGER,
                 thread_id INTEGER,
-                title TEXT,
+                title VARCHAR(255),
                 description TEXT,
-                deadline_dt TEXT, -- Будем хранить тут дату и время вместе в формате YYYY-MM-DD HH:MM
-                sent_week INTEGER DEFAULT 0,  -- Напомнили за неделю
-                sent_3days INTEGER DEFAULT 0, -- Напомнили за 3 дня
-                sent_day INTEGER DEFAULT 0,   -- Напомнили за день
-                sent_hour INTEGER DEFAULT 0, -- Напоминание за час
-                sent_final INTEGER DEFAULT 0  -- Финальный дедлайн
+                deadline_dt DATETIME, -- Будем хранить тут дату и время вместе в формате YYYY-MM-DD HH:MM
+                sent_week BOOLEAN DEFAULT 0,  -- Напомнили за неделю
+                sent_3days BOOLEAN DEFAULT 0, -- Напомнили за 3 дня
+                sent_day BOOLEAN DEFAULT 0,   -- Напомнили за день
+                sent_hour BOOLEAN DEFAULT 0, -- Напоминание за час
+                sent_final BOOLEAN DEFAULT 0  -- Финальный дедлайн
             )
         """)
         await db.commit()
@@ -35,11 +35,11 @@ async def add_deadline(chat_id: int, user_id: int, thread_id: int | None, title:
         parsed_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
 
         
-        # Решаем капкан: проверяем, сколько времени осталось с момента создания
+        # решаем капкан: проверяем, сколько времени осталось с момента создания
         now = datetime.now()
         time_left = parsed_dt - now
         
-        # Если дедлайн уже ближе, чем неделя/3дня/день, автоматически глушим эти уведомления
+        # если дедлайн уже ближе, чем неделя/3дня/день, автоматически глушим эти уведомления
         sent_week = 1 if time_left <= timedelta(days=7) else 0
         sent_3days = 1 if time_left <= timedelta(days=3) else 0
         sent_day = 1 if time_left <= timedelta(days=1) else 0
@@ -53,7 +53,7 @@ async def add_deadline(chat_id: int, user_id: int, thread_id: int | None, title:
             await db.commit()
         return True
     except ValueError:
-        # Если пользователь ввел кривую дату (например, 14:88 или 32.13.2026)
+        # если пользователь ввел кривую дату (например, 14:88 или 32.13.2026)
         return False
 
 async def get_reminders_week():
@@ -110,7 +110,7 @@ async def get_final_deadlines():
 
 async def mark_as_sent(task_id: int, column: str):
     """Универсальная функция для отметки отправленного уведомления"""
-    # Здесь безопасно использовать f-строку, так как имя колонки передаем мы сами из кода, а не юзер
+    # здесь безопасно использовать f-строку, так как имя колонки передаем мы сами из кода, а не юзер
     async with aiosqlite.connect(DB_NAME) as db:
         await db.execute(f"UPDATE deadlines SET {column} = 1 WHERE id = ?", (task_id,))
         await db.commit()
@@ -118,7 +118,7 @@ async def mark_as_sent(task_id: int, column: str):
 async def get_deadlines(chat_id: int):
     """Возвращает список активных дедлайнов для конкретного чата по убыванию времени"""
     async with aiosqlite.connect(DB_NAME) as db:
-        # Выбираем только не отправленные (sent_final = 0) и сортируем по возрастанию
+        # выбираем только не отправленные (sent_final = 0) и сортируем по возрастанию
         async with db.execute(
             "SELECT id, title, deadline_dt, description FROM deadlines WHERE chat_id = ? AND sent_final = 0 ORDER BY deadline_dt",
             (chat_id,)
@@ -134,13 +134,13 @@ async def delete_deadline(deadline_id: int, chat_id: int) -> bool:
         )
         await db.commit()
         # cursor.rowcount вернет количество удаленных строк. 
-        # Если строк > 0, значит удаление прошло успешно.
+        # если строк > 0, значит удаление прошло успешно.
         return cursor.rowcount > 0
     
 async def get_archive(chat_id: int):
     """Возвращает список активных дедлайнов для конкретного чата по убыванию времени"""
     async with aiosqlite.connect(DB_NAME) as db:
-        # Выбираем только не отправленные (sent_final = 0) и сортируем по убыванию (DESC)
+        # выбираем только не отправленные (sent_final = 0) и сортируем по убыванию (DESC)
         async with db.execute(
             "SELECT title, deadline_dt, description FROM deadlines WHERE chat_id = ? AND sent_final = 1 ORDER BY deadline_dt DESC",
             (chat_id,)
